@@ -4,8 +4,20 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const Form = () => {
+const Form = (datass) => {
   const [dataArr, setDataArr] = useState([]);
+  // if(datass){
+  //   useEffect(()=>{
+  //     axios.get("https://localhost:7120/api/data").then((res)=>{
+  //       console.log(res)
+  //     // res.data.filter(()=>{
+  
+  //     // })
+  //     })
+  //     setDataArr(datass)
+  //   })
+    
+  // }
   useEffect(() => {
     
   }, [setDataArr])
@@ -250,7 +262,7 @@ if(window.confirm("Are you sure?")){
             {dataArr.length === 0 ? (
               <tbody>
                 <tr>
-                  <td colSpan="3">No data</td>
+                  <td colSpan="3" className="text-center">No data</td>
                 </tr>
               </tbody>
             ) : (

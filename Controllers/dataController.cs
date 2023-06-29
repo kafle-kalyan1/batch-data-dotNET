@@ -59,6 +59,57 @@ namespace batch_data.Controllers
 
             return Ok(insertedDataList);
         }
+        [HttpPut("edit/{id}")]
+        public async Task<ActionResult<List<Data>>> EditData(int id, List<Data> dataList)
+        {
+            using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+            var updatedDataList = new List<Data>();
+            foreach (var data in dataList)
+            {
+                if (data.id == 0)
+                {
+                    var insertQuery = @"
+                INSERT INTO public.data(
+                    name, gender, batch, hobbies)
+                VALUES (@Name, @Gender, @Batch, @Hobbies)
+                RETURNING *";
+
+                    var insertedData = await connection.QueryFirstOrDefaultAsync<Data>(insertQuery, new
+                    {
+                        Name = data.name,
+                        Gender = data.gender,
+                        Batch = id,
+                        Hobbies = data.hobbies
+                    });
+
+                    updatedDataList.Add(insertedData);
+                }
+                else
+                {
+                   
+                    var updateQuery = @"
+                UPDATE public.data
+                SET name = @Name, gender = @Gender, batch = @Batch, hobbies = @Hobbies
+                WHERE id = @Id
+                RETURNING *";
+
+                    var updatedData = await connection.QueryFirstOrDefaultAsync<Data>(updateQuery, new
+                    {
+                        Name = data.name,
+                        Gender = data.gender,
+                        Batch = id,
+                        Hobbies = data.hobbies,
+                        Id = data.id
+                    });
+
+                    updatedDataList.Add(updatedData);
+                }
+            }
+
+            return Ok(updatedDataList);
+        }
+
 
     }
 }
