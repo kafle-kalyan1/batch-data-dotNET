@@ -9,8 +9,9 @@ const View = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [data]);
 
+  
   const fetchData = () => {
     axios
       .get('https://localhost:7120/api/data')
@@ -18,20 +19,24 @@ const View = () => {
       .catch((error) => console.log(error));
   };
 
-  const handleDelete = (batchId) => {
 
-    if (window.confirm('Are you sure?')) {
+  const handleDelete = (batchId) => {
+    if (window.confirm(`Are you sure you want to delete batch ${batchId}?`)) {
       axios
-        .delete(`http://localhost:5173/api/batch/${batchId}`)
+        .delete(`https://localhost:7120/api/batch/${batchId}`)
         .then(() => {
           setData((prevData) => prevData.filter((item) => item.batch !== batchId));
           toast.success('Successfully deleted');
         })
-        .catch((e) => console.log(e));
+        .catch((error) => {
+          toast.error('Cannot delete now!');
+          console.log(error);
+        });
     } else {
       console.log('You canceled');
     }
   };
+  
 
   const groupedData = data.reduce((acc, item) => {
     if (!acc[item.batch]) {

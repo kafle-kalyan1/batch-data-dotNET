@@ -25,20 +25,40 @@ namespace batch_data.Controllers
                 SELECT d.*
                 FROM data d
                 JOIN ""Batch"" b ON d.batch = b.id
-ORDER BY b.id DESC";
-
+                ORDER BY b.id DESC";
 
             var datas = await connection.QueryAsync<Data>(query);
 
             return Ok(datas);
         }
 
+        [HttpPost("add")]
+        public async Task<ActionResult<List<Data>>> CreateData(List<Data> dataList)
+        {
+            Console.WriteLine(dataList);
+            using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
 
+            var insertedDataList = new List<Data>();
+            foreach (var data in dataList)
+            {
+                var insertQuery = @"
+            INSERT INTO public.data(
+	                name, gender, batch, hobbies)
+	            VALUES (@Name, @Gender, @Batch, @Hobbies)
+	            RETURNING *";
 
+                var insertedData = await connection.QueryFirstOrDefaultAsync<Data>(insertQuery, new
+                {
+                    Name = data.name,
+                    Gender = data.gender,
+                    Batch = data.batch,
+                    Hobbies = data.hobbies
+                });
+                insertedDataList.Add(insertedData);
+            }
 
-}
+            return Ok(insertedDataList);
+        }
 
-
-
-
+    }
 }

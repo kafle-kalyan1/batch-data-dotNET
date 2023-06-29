@@ -1,61 +1,64 @@
-import React, { useState } from 'react';
-import { useFormik } from 'formik';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useState } from "react";
+import { useFormik } from "formik";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Form = () => {
   const [dataArr, setDataArr] = useState([]);
-  const [batchId, setBatchId] = useState(null);
+  useEffect(() => {
+    
+  }, [setDataArr])
+  
 
   const validate = (values) => {
     const errors = {};
 
     if (!values.name) {
-      errors.name = 'Name is required';
+      errors.name = "Name is required";
     }
 
     if (!values.gender) {
-      errors.gender = 'Gender is required';
+      errors.gender = "Gender is required";
     }
 
     if (values.hobbies.length === 0) {
-      errors.hobbies = 'Select at least one hobby';
+      errors.hobbies = "Select at least one hobby";
     }
 
     return errors;
   };
+  function editNow(index, res){
+    formik.setValues({
+      name: res.name,
+      gender: res.gender,
+      hobbies: res.hobbies
+     });
+     setDataArr(prevData => {
+      const newDataArr = [...prevData];
+      newDataArr.splice(index, 1);
+      return newDataArr;
+    });
+  }
+  function deleteNow(index){
+if(window.confirm("Are you sure?")){
+  setDataArr(prevData => {
+    const newDataArr = [...prevData];
+    newDataArr.splice(index, 1);
+    return newDataArr;
+  });
+}
+  }
 
   const formik = useFormik({
     initialValues: {
-      name: '',
-      gender: '',
+      name: "",
+      gender: "",
       hobbies: [],
     },
     validate,
-    onSubmit: (values, actions) => {
-      if (!batchId) {
-        // Create a new batch
-        axios
-          .post('http://localhost:5173/api/batch')
-          .then((res) => {
-            const { id } = res.data;
-            setBatchId(id);
-            addToTable(values, id);
-            actions.resetForm();
-            toast.success('Batch created successfully');
-          })
-          .catch((err) => {
-            toast.error('Failed to create batch');
-          });
-      } else {
-        // Add data to existing batch
-        addToTable(values, batchId);
-        actions.resetForm();
-        toast.success('Item added successfully');
-      }
-      addToTable(values, batchId);
-
+    onSubmit: (values) => {
+      addToTable(values);
     },
   });
 
@@ -69,29 +72,70 @@ const Form = () => {
       newHobby.push(value);
     }
 
-    formik.setFieldValue('hobbies', newHobby);
+    formik.setFieldValue("hobbies", newHobby);
   };
 
-  const addToTable = (item, batchId) => {
-    setDataArr((prevData) => [...prevData, { ...item, batch: batchId }]);
+  const addToTable = (item) => {
+    setDataArr((prevData) => [...prevData, item]);
+    formik.setValues({ name: "", gender: "", hobbies: [] });
   };
+  
+
+  function deleteBatch(batchId) {
+    axios
+      .delete(`https://localhost:7120/api/batch/${batchId}`)
+      .then((res) => {
+        toast.error("Batch Deleted");
+      })
+      .catch((error) => {
+        toast.error("Some error");
+      });
+  }
 
   const handleSaveBatch = () => {
     if (dataArr.length === 0) {
-      toast.error('No data to save');
+      toast.error("No data to save");
       return;
     }
 
-    axios
-      .post('http://localhost:5173/api/batch/save', dataArr)
-      .then(() => {
-        setBatchId(null);
-        setDataArr([]);
-        toast.success('Batch saved successfully');
-      })
-      .catch((err) => {
-        toast.error('Failed to save batch');
-      });
+    try {
+      axios
+        .post("https://localhost:7120/api/batch")
+        .then((res) => {
+          let batchId = res.data.id;
+          console.log("oikkk");
+          const requestData = dataArr.map((data) => {
+            return {
+              name: data.name,
+              gender: data.gender,
+              hobbies: data.hobbies,
+              batch: batchId,
+            };
+          });
+
+          toast.success("Batch saved successfully");
+          addDataToDB(requestData, batchId);
+        })
+        .catch(() => {
+          toast.error("Batch saved ERROR");
+        });
+      function addDataToDB(requestData, batchId) {
+        console.log(requestData);
+        axios
+          .post("https://localhost:7120/api/data/add", requestData)
+          .then(() => {
+            console.log(requestData);
+            setDataArr([]);
+            toast.success("Data saved successfully");
+          })
+          .catch(() => {
+            console.log(requestData);
+            deleteBatch(batchId);
+          });
+      }
+    } catch (error) {
+      toast.error("Failed to save batch: " + error.message);
+    }
   };
 
   return (
@@ -111,7 +155,7 @@ const Form = () => {
                 onBlur={formik.handleBlur}
                 value={formik.values.name}
               />
-              {formik.errors.name && formik.touched.name && (
+              {formik.errors.name && formik.touched.name && !formik.isSubmitting && (
                 <div className="text-danger">{formik.errors.name}</div>
               )}
             </div>
@@ -130,7 +174,7 @@ const Form = () => {
                 <option value="male">Male</option>
                 <option value="female">Female</option>
               </select>
-              {formik.errors.gender && formik.touched.gender && (
+              {formik.errors.gender && formik.touched.gender && !formik.isSubmitting && (
                 <div className="text-danger">{formik.errors.gender}</div>
               )}
             </div>
@@ -143,8 +187,8 @@ const Form = () => {
                     type="checkbox"
                     name="hobbies"
                     value="reading"
-                    checked={formik.values.hobbies.includes('reading')}
-                    onChange={() => handleCheckboxChange('reading')}
+                    checked={formik.values.hobbies.includes("reading")}
+                    onChange={() => handleCheckboxChange("reading")}
                   />
                   Reading
                 </label>
@@ -155,8 +199,8 @@ const Form = () => {
                     type="checkbox"
                     name="hobbies"
                     value="eating"
-                    checked={formik.values.hobbies.includes('eating')}
-                    onChange={() => handleCheckboxChange('eating')}
+                    checked={formik.values.hobbies.includes("eating")}
+                    onChange={() => handleCheckboxChange("eating")}
                   />
                   Eating
                 </label>
@@ -167,8 +211,8 @@ const Form = () => {
                     type="checkbox"
                     name="hobbies"
                     value="dance"
-                    checked={formik.values.hobbies.includes('dance')}
-                    onChange={() => handleCheckboxChange('dance')}
+                    checked={formik.values.hobbies.includes("dance")}
+                    onChange={() => handleCheckboxChange("dance")}
                   />
                   Dance
                 </label>
@@ -179,42 +223,59 @@ const Form = () => {
                     type="checkbox"
                     name="hobbies"
                     value="gaming"
-                    checked={formik.values.hobbies.includes('gaming')}
-                    onChange={() => handleCheckboxChange('gaming')}
+                    checked={formik.values.hobbies.includes("gaming")}
+                    onChange={() => handleCheckboxChange("gaming")}
                   />
                   Gaming
                 </label>
               </div>
-              {formik.errors.hobbies && formik.touched.hobbies && (
+              {formik.errors.hobbies && !formik.isSubmitting && formik.touched.hobbies && (
                 <div className="text-danger">{formik.errors.hobbies}</div>
               )}
             </div>
 
-            <button type="button" className="btn btn-primary" onClick={formik.handleSubmit}>
+            <button type="submit" className="btn btn-primary">
               Add
             </button>
           </form>
 
-          {dataArr.length === 0 ? (
-            <h1>No data</h1>
-          ) : (
-            <div>
-              {dataArr.map((res, index) => (
-                <div key={index}>
-                  <p>{res.name}</p>
-                  <p>{res.gender}</p>
-                  <p>{res.hobbies.join(', ')}</p>
-                </div>
-              ))}
-              <button
-                type="button"
-                className="btn btn-success"
-                onClick={handleSaveBatch}
-              >
-                Save Batch
-              </button>
-            </div>
-          )}
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Hobbies</th>
+              </tr>
+            </thead>
+            {dataArr.length === 0 ? (
+              <tbody>
+                <tr>
+                  <td colSpan="3">No data</td>
+                </tr>
+              </tbody>
+            ) : (
+              <>
+                <tbody>
+                  {dataArr.map((res, index) => (
+                    <tr key={index}>
+                      <td>{res.name}</td>
+                      <td>{res.gender}</td>
+                      <td>{res.hobbies.join(", ")}</td>
+                      <td><button className="btn btn-primary" onClick={()=> editNow(index, res)}>Edit</button></td>
+                      <td><button className="btn btn-danger" onClick={()=> deleteNow(index)}>Delete</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleSaveBatch}
+                >
+                  Save Batch
+                </button>
+              </>
+            )}
+          </table>
         </div>
       </div>
     </div>
