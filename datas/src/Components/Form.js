@@ -4,21 +4,23 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Form = () => {
   const [dataArr, setDataArr] = useState([]);
   const [batchId, setBatchId] = useState();
   const [mode, setEditMode] = useState(false);
   const location = useLocation();
+  const navigatee = useNavigate();
 
   useEffect(() => {
     const data = location.state;
     if (data !== null) {
       const dataArray = Object.values(data);
       setDataArr(dataArray);
-      setBatchId(dataArray[0].batch)
+      setBatchId(dataArray[0].batch);
     }
-  }, []);
+  }, [ setDataArr, setEditMode]);
 
   const validate = (values) => {
     const errors = {};
@@ -40,34 +42,62 @@ const Form = () => {
 
   function editNow(index, res) {
     formik.setValues({
+      id: res.id,
       name: res.name,
       gender: res.gender,
       hobbies: res.hobbies,
     });
     setEditMode(true)
-    // setDataArr((prevData) => {
-    //   const newDataArr = [...prevData];
-    //   newDataArr.splice(index, 1);
-    //   return newDataArr;
-    // });
-
+   
   }
-  function handleEdit(){
-    
+
+  function handleEdit(res){
+    setDataArr((prevData) => {
+      // Remove the edited item from the data array
+      const newDataArr = prevData.filter((item) => item.id !== res.id);
+      // Add the updated item to the data array
+      newDataArr.push(res);
+      return newDataArr;
+    });
+    formik.setValues({ name: "", gender: "", hobbies: [] });
+    setEditMode(false)
   }
 
   function deleteNow(index) {
     if (window.confirm("Are you sure?")) {
+      
       setDataArr((prevData) => {
         const newDataArr = [...prevData];
         newDataArr.splice(index, 1);
         return newDataArr;
       });
+          
+        }
+  }
+
+  function deleteDb(index, id) {
+    if (window.confirm("Are you sure?" + id)) {
+      axios
+        .delete(`https://localhost:7120/api/data/delete/${id}`)
+        .then((res) => {
+          console.log(res);
+          toast.success("Deleted");
+          setDataArr((prevData) => {
+            const newDataArr = [...prevData];
+            newDataArr.splice(index, 1);
+            return newDataArr;
+          });
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
     }
   }
+  
 
   const formik = useFormik({
     initialValues: {
+      id:0,
       name: "",
       gender: "",
       hobbies: [],
@@ -112,15 +142,20 @@ const Form = () => {
       toast.error("No data to save");
       return;
     }
-    console.log(dataArr)
-    axios.put(`https://localhost:7120/api/data/edit/${batchId}`,dataArr).then(()=>{
-      toast.success("Saved");
-
-    }).catch(()=>{
-      toast.error("Unable to Update");
-
-    })
-  }
+    dataArr.forEach((res) => {
+      res.batch = batchId;
+    });
+    axios
+      .put(`https://localhost:7120/api/data/edit/${batchId}`, dataArr)
+      .then((res) => {
+        toast.success("Saved");
+        setDataArr(dataArr);
+      })
+      .catch(() => {
+        toast.error("Unable to Update");
+      });
+  };
+  
 
   const handleSaveBatch = () => {
     if (dataArr.length === 0) {
@@ -196,9 +231,11 @@ const Form = () => {
                 onBlur={formik.handleBlur}
                 value={formik.values.name}
               />
-              {formik.errors.name && formik.touched.name && !formik.isSubmitting && (
-                <div className="text-danger">{formik.errors.name}</div>
-              )}
+              {formik.errors.name &&
+                formik.touched.name &&
+                !formik.isSubmitting && (
+                  <div className="text-danger">{formik.errors.name}</div>
+                )}
             </div>
 
             <div className="form-group">
@@ -215,9 +252,11 @@ const Form = () => {
                 <option value="male">Male</option>
                 <option value="female">Female</option>
               </select>
-              {formik.errors.gender && formik.touched.gender && !formik.isSubmitting && (
-                <div className="text-danger">{formik.errors.gender}</div>
-              )}
+              {formik.errors.gender &&
+                formik.touched.gender &&
+                !formik.isSubmitting && (
+                  <div className="text-danger">{formik.errors.gender}</div>
+                )}
             </div>
 
             <div className="form-group">
@@ -270,23 +309,26 @@ const Form = () => {
                   Gaming
                 </label>
               </div>
-              {formik.errors.hobbies && !formik.isSubmitting && formik.touched.hobbies && (
-                <div className="text-danger">{formik.errors.hobbies}</div>
-              )}
+              {formik.errors.hobbies &&
+                !formik.isSubmitting &&
+                formik.touched.hobbies && (
+                  <div className="text-danger">{formik.errors.hobbies}</div>
+                )}
             </div>
 
-             {
-
-             mode ? 
-            <button type="button" onClick={handleEdit} className="btn btn-primary">
-              Edit
-            </button>
-            :
-            <button type="submit" className="btn btn-primary">
-            Add 
-          </button>
-            } 
-
+            {mode ? (
+              <button
+                type="button"
+                onClick={()=>handleEdit(formik.values)}
+                className="btn btn-primary"
+              >
+                Edit
+              </button>
+            ) : (
+              <button type="submit" className="btn btn-primary">
+                Add
+              </button>
+            )}
           </form>
 
           <table className="table">
@@ -300,7 +342,9 @@ const Form = () => {
             {dataArr.length === 0 ? (
               <tbody>
                 <tr>
-                  <td colSpan="3" className="text-center">No data</td>
+                  <td colSpan="3" className="text-center">
+                    No data
+                  </td>
                 </tr>
               </tbody>
             ) : (
@@ -311,35 +355,53 @@ const Form = () => {
                       <td>{res.name}</td>
                       <td>{res.gender}</td>
                       <td>{res.hobbies.join(", ")}</td>
-                      <td><button className="btn btn-primary" onClick={() => editNow(index, res)}>Edit</button></td>
-                      <td><button className="btn btn-danger" onClick={() => deleteNow(index)}>Delete</button></td>
+                      <td>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => editNow(index, res)}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                      <td>
+                        {console.log(res.id)}
+                        {res.id !== 0 || undefined ? (
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => deleteDb(index, res.id)}
+
+                            >
+                            Delete
+                          </button>
+                        ) : (
+                          <button
+                          className="btn btn-danger"
+                          onClick={() => deleteNow(index)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
-                {
-                  location.state !== null ? (
-                    <button
+                {location.state !== null ? (
+                  <button
                     type="button"
                     className="btn btn-success"
-                    onClick={()=>handleUpdate(batchId)}
+                    onClick={() => handleUpdate(batchId)}
                   >
-      {console.log(batchId)}
-                    
                     Update
                   </button>
-
-                  ) :
-                    <button
-                      type="button"
-                      className="btn btn-success"
-                      onClick={handleSaveBatch}
-                    >
-                      Save Batch
-                    </button>
-                   
-
-                }
-
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    onClick={handleSaveBatch}
+                  >
+                    Save Batch
+                  </button>
+                )}
               </>
             )}
           </table>

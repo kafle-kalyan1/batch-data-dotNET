@@ -123,26 +123,18 @@ namespace batch_data.Controllers
             return Ok(dataBatch);
         }
 
-        [HttpPut("edit/{id}")]
-        public async Task<ActionResult<Data>> GetDataForEdit(List<Data> dataList)
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult<Data>> DeleteById(int id)
         {
             using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
 
             var query = @"
-        UPDATE public.data
-                SET name = @Name, gender = @Gender, hobbies = @Hobbies
-                WHERE id = @Id
-                RETURNING *";
+        DELETE FROM public.data WHERE id = @Id ";
 
-            var dataBatch = await connection.QueryAsync<Data>(query, new {
-                //Batch = dataList.id,
-                //Name = dataList.name
+            var deleteBatch = await connection.QueryAsync<Data>(query, new { Id = id });
 
-            });
-
-            return Ok(dataBatch);
+            return Ok(deleteBatch);
         }
-
 
     }
 }

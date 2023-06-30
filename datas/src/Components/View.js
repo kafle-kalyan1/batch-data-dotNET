@@ -74,7 +74,7 @@ const View = () => {
                   <h3>Batch: {batchId}</h3>
                   <td className="mx-5">
                     <a
-                      className="btn btn-info"
+                      className="btn btn-info text-light"
                       onClick={() => editBatch(batchId)}
                     >
                       Edit
