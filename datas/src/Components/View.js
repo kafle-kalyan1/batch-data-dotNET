@@ -11,7 +11,7 @@ const View = () => {
 
   useEffect(() => {
     fetchData();
-  }, [data]);
+  }, [setData]);
 
   const fetchData = () => {
     axios
@@ -52,6 +52,7 @@ const View = () => {
       acc[item.batch] = [];
     }
     acc[item.batch].push(item);
+    console.log(acc)
     return acc;
   }, {});
 
@@ -92,7 +93,7 @@ const View = () => {
 
                 <table className="table">
                   <thead>
-                    <tr>
+                    <tr> 
                       <th>ID</th>
                       <th>Name</th>
                       <th>Gender</th>
