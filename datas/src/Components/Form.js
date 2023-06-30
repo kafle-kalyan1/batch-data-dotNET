@@ -3,25 +3,22 @@ import { useFormik } from "formik";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from "react-router-dom";
 
-const Form = (datass) => {
+const Form = () => {
   const [dataArr, setDataArr] = useState([]);
-  // if(datass){
-  //   useEffect(()=>{
-  //     axios.get("https://localhost:7120/api/data").then((res)=>{
-  //       console.log(res)
-  //     // res.data.filter(()=>{
-  
-  //     // })
-  //     })
-  //     setDataArr(datass)
-  //   })
-    
-  // }
+  const [batchId, setBatchId] = useState();
+  const [mode, setEditMode] = useState(false);
+  const location = useLocation();
+
   useEffect(() => {
-    
-  }, [setDataArr])
-  
+    const data = location.state;
+    if (data !== null) {
+      const dataArray = Object.values(data);
+      setDataArr(dataArray);
+      setBatchId(dataArray[0].batch)
+    }
+  }, []);
 
   const validate = (values) => {
     const errors = {};
@@ -40,26 +37,33 @@ const Form = (datass) => {
 
     return errors;
   };
-  function editNow(index, res){
+
+  function editNow(index, res) {
     formik.setValues({
       name: res.name,
       gender: res.gender,
-      hobbies: res.hobbies
-     });
-     setDataArr(prevData => {
-      const newDataArr = [...prevData];
-      newDataArr.splice(index, 1);
-      return newDataArr;
+      hobbies: res.hobbies,
     });
+    setEditMode(true)
+    // setDataArr((prevData) => {
+    //   const newDataArr = [...prevData];
+    //   newDataArr.splice(index, 1);
+    //   return newDataArr;
+    // });
+
   }
-  function deleteNow(index){
-if(window.confirm("Are you sure?")){
-  setDataArr(prevData => {
-    const newDataArr = [...prevData];
-    newDataArr.splice(index, 1);
-    return newDataArr;
-  });
-}
+  function handleEdit(){
+    
+  }
+
+  function deleteNow(index) {
+    if (window.confirm("Are you sure?")) {
+      setDataArr((prevData) => {
+        const newDataArr = [...prevData];
+        newDataArr.splice(index, 1);
+        return newDataArr;
+      });
+    }
   }
 
   const formik = useFormik({
@@ -91,7 +95,6 @@ if(window.confirm("Are you sure?")){
     setDataArr((prevData) => [...prevData, item]);
     formik.setValues({ name: "", gender: "", hobbies: [] });
   };
-  
 
   function deleteBatch(batchId) {
     axios
@@ -104,6 +107,21 @@ if(window.confirm("Are you sure?")){
       });
   }
 
+  const handleUpdate = (batchId) => {
+    if (dataArr.length === 0) {
+      toast.error("No data to save");
+      return;
+    }
+    console.log(dataArr)
+    axios.put(`https://localhost:7120/api/data/edit/${batchId}`,dataArr).then(()=>{
+      toast.success("Saved");
+
+    }).catch(()=>{
+      toast.error("Unable to Update");
+
+    })
+  }
+
   const handleSaveBatch = () => {
     if (dataArr.length === 0) {
       toast.error("No data to save");
@@ -111,43 +129,54 @@ if(window.confirm("Are you sure?")){
     }
 
     try {
-      axios
-        .post("https://localhost:7120/api/batch")
-        .then((res) => {
-          let batchId = res.data.id;
-          console.log("oikkk");
-          const requestData = dataArr.map((data) => {
-            return {
-              name: data.name,
-              gender: data.gender,
-              hobbies: data.hobbies,
-              batch: batchId,
-            };
-          });
-
-          toast.success("Batch saved successfully");
-          addDataToDB(requestData, batchId);
-        })
-        .catch(() => {
-          toast.error("Batch saved ERROR");
+      const data = location.state;
+      if (data !== null) {
+        let batchId = data[0].id;
+        const requestData = dataArr.map((data) => {
+          return {
+            name: data.name,
+            gender: data.gender,
+            hobbies: data.hobbies,
+            batch: batchId,
+          };
         });
-      function addDataToDB(requestData, batchId) {
-        console.log(requestData);
+        addDataToDB(requestData, batchId);
+      } else {
         axios
-          .post("https://localhost:7120/api/data/add", requestData)
-          .then(() => {
-            console.log(requestData);
-            setDataArr([]);
-            toast.success("Data saved successfully");
+          .post("https://localhost:7120/api/batch")
+          .then((res) => {
+            let batchId = res.data.id;
+
+            const requestData = dataArr.map((data) => {
+              return {
+                name: data.name,
+                gender: data.gender,
+                hobbies: data.hobbies,
+                batch: batchId,
+              };
+            });
+            toast.success("Batch saved successfully");
+            addDataToDB(requestData, batchId);
           })
           .catch(() => {
-            console.log(requestData);
-            deleteBatch(batchId);
+            toast.error("Batch saved ERROR");
           });
       }
     } catch (error) {
       toast.error("Failed to save batch: " + error.message);
     }
+  };
+
+  const addDataToDB = (requestData, batchId) => {
+    axios
+      .post("https://localhost:7120/api/data/add", requestData)
+      .then(() => {
+        setDataArr([]);
+        toast.success("Data saved successfully");
+      })
+      .catch(() => {
+        deleteBatch(batchId);
+      });
   };
 
   return (
@@ -246,9 +275,18 @@ if(window.confirm("Are you sure?")){
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              Add
+             {
+
+             mode ? 
+            <button type="button" onClick={handleEdit} className="btn btn-primary">
+              Edit
             </button>
+            :
+            <button type="submit" className="btn btn-primary">
+            Add 
+          </button>
+            } 
+
           </form>
 
           <table className="table">
@@ -273,18 +311,35 @@ if(window.confirm("Are you sure?")){
                       <td>{res.name}</td>
                       <td>{res.gender}</td>
                       <td>{res.hobbies.join(", ")}</td>
-                      <td><button className="btn btn-primary" onClick={()=> editNow(index, res)}>Edit</button></td>
-                      <td><button className="btn btn-danger" onClick={()=> deleteNow(index)}>Delete</button></td>
+                      <td><button className="btn btn-primary" onClick={() => editNow(index, res)}>Edit</button></td>
+                      <td><button className="btn btn-danger" onClick={() => deleteNow(index)}>Delete</button></td>
                     </tr>
                   ))}
                 </tbody>
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={handleSaveBatch}
-                >
-                  Save Batch
-                </button>
+                {
+                  location.state !== null ? (
+                    <button
+                    type="button"
+                    className="btn btn-success"
+                    onClick={()=>handleUpdate(batchId)}
+                  >
+      {console.log(batchId)}
+                    
+                    Update
+                  </button>
+
+                  ) :
+                    <button
+                      type="button"
+                      className="btn btn-success"
+                      onClick={handleSaveBatch}
+                    >
+                      Save Batch
+                    </button>
+                   
+
+                }
+
               </>
             )}
           </table>

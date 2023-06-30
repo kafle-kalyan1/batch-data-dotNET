@@ -110,6 +110,39 @@ namespace batch_data.Controllers
             return Ok(updatedDataList);
         }
 
+        [HttpGet("view/{id}")]
+        public async Task<ActionResult<Data>> GetBatchDataById(int id)
+        {
+            using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+            var query = @"
+        SELECT * FROM public.data WHERE batch = @Batch ";
+
+            var dataBatch = await connection.QueryAsync<Data>(query, new { Batch = id });
+
+            return Ok(dataBatch);
+        }
+
+        [HttpPut("edit/{id}")]
+        public async Task<ActionResult<Data>> GetDataForEdit(List<Data> dataList)
+        {
+            using var connection = new NpgsqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+            var query = @"
+        UPDATE public.data
+                SET name = @Name, gender = @Gender, hobbies = @Hobbies
+                WHERE id = @Id
+                RETURNING *";
+
+            var dataBatch = await connection.QueryAsync<Data>(query, new {
+                //Batch = dataList.id,
+                //Name = dataList.name
+
+            });
+
+            return Ok(dataBatch);
+        }
+
 
     }
 }

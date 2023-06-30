@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const View = () => {
   const [data, setData] = useState([]);
+  let navigatee = useNavigate()
 
   useEffect(() => {
     fetchData();
@@ -37,6 +39,14 @@ const View = () => {
     }
   };
 
+  function editBatch(id){
+    axios.get(`https://localhost:7120/api/data/view/${id}`).then((res)=>{
+      navigatee('/data', { state: res.data})
+    }).catch((err)=>{
+      console.log(err)
+    })
+  }
+
   const groupedData = data.reduce((acc, item) => {
     if (!acc[item.batch]) {
       acc[item.batch] = [];
@@ -64,8 +74,8 @@ const View = () => {
                   <h3>Batch: {batchId}</h3>
                   <td className="mx-5">
                     <a
-                      className="btn btn-primary"
-                      // onClick={() => editBatch(batchId)}
+                      className="btn btn-info"
+                      onClick={() => editBatch(batchId)}
                     >
                       Edit
                     </a>
