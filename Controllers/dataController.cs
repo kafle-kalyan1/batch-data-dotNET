@@ -24,8 +24,7 @@ namespace batch_data.Controllers
             var query = @"
                 SELECT d.*
                 FROM data d
-                JOIN ""Batch"" b ON d.batch = b.id
-                ORDER BY b.id DESC";
+                JOIN ""Batch"" b ON d.batch = b.id";
 
             var datas = await connection.QueryAsync<Data>(query);
 

@@ -1,13 +1,13 @@
-import React, { useEffect, useState, } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
 const View = () => {
   const [data, setData] = useState([]);
-  let navigatee = useNavigate()
+  const [groupData, setGroupData] = useState([]);
+  let navigatee = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -39,12 +39,15 @@ const View = () => {
     }
   };
 
-  function editBatch(id){
-    axios.get(`https://localhost:7120/api/data/view/${id}`).then((res)=>{
-      navigatee('/data', { state: res.data})
-    }).catch((err)=>{
-      console.log(err)
-    })
+  function editBatch(id) {
+    axios
+      .get(`https://localhost:7120/api/data/view/${id}`)
+      .then((res) => {
+        navigatee("/data", { state: res.data });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   const groupedData = data.reduce((acc, item) => {
@@ -52,12 +55,35 @@ const View = () => {
       acc[item.batch] = [];
     }
     acc[item.batch].push(item);
-    console.log(acc)
     return acc;
   }, {});
 
+  const exportExcel = () => {
+    toast.loading("Exporting documents...");
+
+    axios
+      .post("https://localhost:7120/api/excel/export", data)
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "UserData.xlsx");
+        document.body.appendChild(link);
+        link.click();
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        toast.dismiss();
+      });
+  };
+
   return (
     <div style={{ margin: "auto", maxWidth: "600px" }}>
+      <button className="btn btn-primary" onClick={exportExcel}>
+        Export to excel
+      </button>
       <h1 style={{ textAlign: "center", marginBottom: "20px" }}>User Data</h1>
 
       {Object.entries(groupedData).length === 0 ? (
@@ -68,7 +94,11 @@ const View = () => {
       ) : (
         <>
           {Object.entries(groupedData)
-            .sort((a, b) => b[0] - a[0])
+            // .sort((a, b) => {
+
+            //   console.log(a, b)
+            //   return b[0] - a[0]
+            // })
             .map(([batchId, batchData]) => (
               <div key={batchId} style={{ marginBottom: "30px" }}>
                 <div className="d-flex flex-row">
@@ -93,7 +123,7 @@ const View = () => {
 
                 <table className="table">
                   <thead>
-                    <tr> 
+                    <tr>
                       <th>ID</th>
                       <th>Name</th>
                       <th>Gender</th>
