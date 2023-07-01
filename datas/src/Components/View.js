@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 
 const View = () => {
   const [data, setData] = useState([]);
-  const [groupData, setGroupData] = useState([]);
   let navigatee = useNavigate();
 
   useEffect(() => {
@@ -60,7 +59,7 @@ const View = () => {
 
   const exportExcel = () => {
     toast.loading("Exporting documents...");
-
+    console.log(data);
     axios
       .post("https://localhost:7120/api/excel/export", data)
       .then((response) => {
