@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using batch_data;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using static System.Net.WebRequestMethods;
 
-namespace batch_data.Controllers
+namespace BatchData.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -17,23 +21,64 @@ namespace batch_data.Controllers
 
             using ExcelPackage package = new();
             var worksheet = package.Workbook.Worksheets.Add("User Data");
-            worksheet.Cells[1, 1].Value = "ID";
-            worksheet.Cells[1, 2].Value = "Name";
-            worksheet.Cells[1, 3].Value = "Gender";
-            worksheet.Cells[1, 4].Value = "Hobbies";
+            var header = worksheet.Cells[2, 3, 2, 7];
 
-            var row = 2;
+           header.Value = "Welcome! Here is the List of Data";
+           header.Merge = true;
+           header.Style.Font.Size = 20;
+           header.Style.Font.Bold = true;
+           header.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+           header.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+           header.Style.Fill.PatternType = ExcelFillStyle.Solid;
+           header.Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
+
+            worksheet.Cells[4, 3].Value = "ID";
+            worksheet.Cells[4, 4].Value = "Name";
+            worksheet.Cells[4, 5].Value = "Gender";
+            worksheet.Cells[4, 6].Value = "Hobbies";
+            var headerRange = worksheet.Cells[4, 3, 4, 6];
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Font.Size = 14;
+            headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            headerRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+            headerRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            headerRange.Style.Fill.BackgroundColor.SetColor(Color.LightGray);
+
+            var row = 5;
+            int batchh = 0;
             foreach (var data in dataList)
             {
-                worksheet.Cells[row, 1].Value = data.id;
-                worksheet.Cells[row, 2].Value = data.name;
-                worksheet.Cells[row, 3].Value = data.gender;
-                worksheet.Cells[row, 4].Value = string.Join(", ", data.hobbies);
+                if (batchh != data.batch)
+                {
+                    worksheet.Cells[row, 4, row, 5].Value = "Batch: "+data.batch;
+                    worksheet.Cells[row, 4, row, 5].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    worksheet.Cells[row, 4, row, 5].Style.Fill.BackgroundColor.SetColor(Color.LightCyan);
+                    worksheet.Cells[row, 4, row, 5].Style.Font.Bold = true;
+                    worksheet.Cells[row, 4, row, 5].Style.Font.Size = 17;
+                    worksheet.Cells[row, 4, row, 5].Merge = true;
+                    worksheet.Cells[row, 4, row, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[row, 4, row, 5].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    row++;
+                }
+                worksheet.Cells[row, 3].Value = data.id;
+                worksheet.Cells[row, 3, row, 6].Style.Font.Size = 12;
+                worksheet.Cells[row, 3, row, 6].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                worksheet.Cells[row, 3, row, 6].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                worksheet.Cells[row, 3, row, 6].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                worksheet.Cells[row, 3, row, 6].Style.Fill.BackgroundColor.SetColor(Color.LightYellow);
+                worksheet.Cells[row, 4].Value = data.name;
+                worksheet.Cells[row, 5].Value = data.gender;
+                worksheet.Cells[row, 6].Value = string.Join(", ", data.hobbies);
+                batchh = data.batch;
                 row++;
             }
+
+        
             worksheet.Cells.AutoFitColumns();
 
-            var fileName = "UserData.CSV";
+            worksheet.Protection.AllowSelectLockedCells = false;
+
+            var fileName = "UserData.xlsx";
             var filePath = Path.Combine(Path.GetTempPath(), fileName);
             package.SaveAs(new FileInfo(filePath));
 
@@ -52,13 +97,14 @@ namespace batch_data.Controllers
             worksheet.Cells[1, 3].Value = "Gender";
             worksheet.Cells[1, 4].Value = "Hobbies";
             worksheet.Cells[2, 1].Value = 1;
-            worksheet.Cells[2, 2].Value = "USERR";
+            worksheet.Cells[2, 2].Value = "USER";
             worksheet.Cells[2, 3].Value = "Female";
             worksheet.Cells[2, 4].Value = "Eating";
 
+
             worksheet.Cells.AutoFitColumns();
 
-            var fileName = "UserDataa.CSV";
+            var fileName = "UserData.xlsx";
             var filePath = Path.Combine(Path.GetTempPath(), fileName);
             package.SaveAs(new FileInfo(filePath));
 
