@@ -4,14 +4,13 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
-
 const View = () => {
   const [data, setData] = useState([]);
   let navigatee = useNavigate();
 
   useEffect(() => {
     fetchData();
-  }, [setData]);
+  }, [data]);
 
   const fetchData = () => {
     axios
@@ -61,13 +60,15 @@ const View = () => {
   const exportExcel = () => {
     toast.loading("Exporting documents...");
     console.log(data);
-    let data2  = JSON.stringify(data);
+    let data2 = JSON.stringify(data);
     axios
       .post("https://localhost:7120/api/excel/export", data, {
-        responseType: "blob"
+        responseType: "blob",
       })
       .then((response) => {
+        console.log(response.data);
         const url = window.URL.createObjectURL(new Blob([response.data]));
+        console.log(url);
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute("download", `${Date.now()}.xlsx`);

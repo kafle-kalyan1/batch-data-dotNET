@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using batch_data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using static System.Net.WebRequestMethods;
@@ -21,7 +22,12 @@ namespace BatchData.Controllers
 
             using ExcelPackage package = new();
             var worksheet = package.Workbook.Worksheets.Add("User Data");
-            var header = worksheet.Cells[2, 3, 2, 7];
+            var header = worksheet.Cells[2, 3, 2, 6];
+
+            worksheet.View.SplitPanes(4,5);
+            worksheet.View.FreezePanes(5,1);
+
+
 
            header.Value = "Welcome! Here is the List of Data";
            header.Merge = true;
@@ -44,28 +50,41 @@ namespace BatchData.Controllers
             headerRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
             headerRange.Style.Fill.BackgroundColor.SetColor(Color.LightGray);
 
-            var row = 5;
+
+            var row = 4;
             int batchh = 0;
             foreach (var data in dataList)
             {
                 if (batchh != data.batch)
                 {
-                    worksheet.Cells[row, 4, row, 5].Value = "Batch: "+data.batch;
-                    worksheet.Cells[row, 4, row, 5].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                    worksheet.Cells[row, 4, row, 5].Style.Fill.BackgroundColor.SetColor(Color.LightCyan);
-                    worksheet.Cells[row, 4, row, 5].Style.Font.Bold = true;
-                    worksheet.Cells[row, 4, row, 5].Style.Font.Size = 17;
-                    worksheet.Cells[row, 4, row, 5].Merge = true;
-                    worksheet.Cells[row, 4, row, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    worksheet.Cells[row, 4, row, 5].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    row++;
+                    var tabless = worksheet.Cells[row, 3, row, 6];
+                    tabless.Value = "Batch: "+data.batch;
+                    tabless.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    tabless.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#CCCCCC"));
+                    tabless.Style.Font.Bold = true;
+                    tabless.Style.Font.Size = 12;
+                    tabless.Merge = true;
+                    tabless.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    tabless.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     row++;
                 }
+                var datasss = worksheet.Cells[row, 3, row, 6];
                 worksheet.Cells[row, 3].Value = data.id;
-                worksheet.Cells[row, 3, row, 6].Style.Font.Size = 12;
-                worksheet.Cells[row, 3, row, 6].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                worksheet.Cells[row, 3, row, 6].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                worksheet.Cells[row, 3, row, 6].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                worksheet.Cells[row, 3, row, 6].Style.Fill.BackgroundColor.SetColor(Color.LightYellow);
+                datasss.Style.Font.Size = 12;
+                datasss.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                datasss.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                datasss.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                datasss.Style.Fill.BackgroundColor.SetColor(Color.LightYellow);
+                datasss.Style.Border.Left.Style = ExcelBorderStyle.Medium;
+                datasss.Style.Border.Left.Color.SetColor(ColorTranslator.FromHtml("#0000"));
+                datasss.Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                datasss.Style.Border.Right.Color.SetColor(ColorTranslator.FromHtml("#0000"));
+                datasss.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+
+                datasss.Style.Border.Bottom.Color.SetColor(ColorTranslator.FromHtml("#0000"));  
+                datasss.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                datasss.Style.Border.Top.Color.SetColor(ColorTranslator.FromHtml("#0000"));
                 worksheet.Cells[row, 4].Value = data.name;
                 worksheet.Cells[row, 5].Value = data.gender;
                 worksheet.Cells[row, 6].Value = string.Join(", ", data.hobbies);
@@ -76,7 +95,7 @@ namespace BatchData.Controllers
         
             worksheet.Cells.AutoFitColumns();
 
-            worksheet.Protection.AllowSelectLockedCells = false;
+          //  worksheet.Protection.AllowSelectLockedCells = false;
 
             var fileName = "UserData.xlsx";
             var filePath = Path.Combine(Path.GetTempPath(), fileName);
