@@ -18,6 +18,79 @@ namespace BatchData.Controllers
         [HttpPost("export")]
         public IActionResult ExportToExcel(List<Data> dataList)
         {
+            FinalData data1 = new FinalData
+            {
+                property_name = "PPPPPP",
+                report_name = "RRRRRR",
+                filters = new List<ReportFilters>
+                {
+                    new ReportFilters
+                    {
+                        key = "From Date",
+                        value = "2020-01-01"
+                    },
+                    new ReportFilters
+                    {
+                        key = "To Date",
+                        value = "2020-01-01"
+                    }
+                },
+                primary_table = new TableData
+                {
+                    header = new TableHeader
+                    {
+                        value = new List<string> {
+                            "Order Date",
+                            "Menu Type"
+                        }
+                    },
+                    rows = new List<TableRow> {
+                        new TableRow{
+                            value=new List<string> {
+                                "Kathmandu Foods"
+                            },
+                            is_bold=true,
+                            is_cell_merged=true
+                        },
+                        new TableRow{
+                            value=new List<string> {
+                                "Administration"
+                            },
+                            is_bold=true,
+                            is_cell_merged=true
+                        },
+                        new TableRow{
+                            is_cell_merged = false,
+                            is_bold=false,
+                            value=new List<string>{ 
+                                "2020-01-01",
+                                "Food"
+                            }
+                        },
+                        new TableRow{
+                            is_cell_merged = false,
+                            is_bold=false,
+                            value=new List<string>{
+                                "2020-01-01",
+                                "Food"
+                            }
+                        },
+                        new TableRow{
+                            is_cell_merged = false,
+                            is_bold=true,
+                            value=new List<string>{
+                                "",
+                                "100"
+                            }
+                        }
+                    }
+                },
+                secondary_table=new List<TableData> { 
+                
+                }
+
+            };
+
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             using ExcelPackage package = new();
@@ -31,7 +104,7 @@ namespace BatchData.Controllers
 
            header.Value = "Welcome! Here is the List of Data";
            header.Merge = true;
-           header.Style.Font.Size = 20;
+           header.Style.Font.Size = 20;     
            header.Style.Font.Bold = true;
            header.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
            header.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
@@ -69,6 +142,7 @@ namespace BatchData.Controllers
                     tabless.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     row++;
                 }
+
                 var datasss = worksheet.Cells[row, 3, row, 6];
                 worksheet.Cells[row, 3].Value = data.id;
                 datasss.Style.Font.Size = 12;
@@ -95,7 +169,7 @@ namespace BatchData.Controllers
         
             worksheet.Cells.AutoFitColumns();
 
-          //  worksheet.Protection.AllowSelectLockedCells = false;
+            //worksheet.Protection.AllowSelectLockedCells = false;
 
             var fileName = "UserData.xlsx";
             var filePath = Path.Combine(Path.GetTempPath(), fileName);

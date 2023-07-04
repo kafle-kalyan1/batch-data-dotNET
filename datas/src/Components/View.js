@@ -60,7 +60,6 @@ const View = () => {
   const exportExcel = () => {
     toast.loading("Exporting documents...");
     console.log(data);
-    let data2 = JSON.stringify(data);
     axios
       .post("https://localhost:7120/api/excel/export", data, {
         responseType: "blob",
@@ -97,56 +96,50 @@ const View = () => {
         </>
       ) : (
         <>
-          {Object.entries(groupedData)
-            // .sort((a, b) => {
-
-            //   console.log(a, b)
-            //   return b[0] - a[0]
-            // })
-            .map(([batchId, batchData]) => (
-              <div key={batchId} style={{ marginBottom: "30px" }}>
-                <div className="d-flex flex-row">
-                  <h3>Batch: {batchId}</h3>
-                  <td className="mx-5">
-                    <a
-                      className="btn btn-info text-light"
-                      onClick={() => editBatch(batchId)}
-                    >
-                      Edit
-                    </a>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(batchId)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </div>
-
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Name</th>
-                      <th>Gender</th>
-                      <th>Hobbies</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {batchData.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.id}</td>
-                        <td>{item.name}</td>
-                        <td>{item.gender}</td>
-                        <td>{item.hobbies.join(", ")}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {Object.entries(groupedData).map(([batchId, batchData]) => (
+            <div key={batchId} style={{ marginBottom: "30px" }}>
+              <div className="d-flex flex-row">
+                <h3>Batch: {batchId}</h3>
+                <td className="mx-5">
+                  <a
+                    className="btn btn-info text-light"
+                    onClick={() => editBatch(batchId)}
+                  >
+                    Edit
+                  </a>
+                </td>
+                <td>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleDelete(batchId)}
+                  >
+                    Delete
+                  </button>
+                </td>
               </div>
-            ))}
+
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Hobbies</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {batchData.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.id}</td>
+                      <td>{item.name}</td>
+                      <td>{item.gender}</td>
+                      <td>{item.hobbies.join(", ")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
         </>
       )}
     </div>
