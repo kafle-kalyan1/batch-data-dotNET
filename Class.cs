@@ -51,12 +51,14 @@ namespace batch_data
     public class TableHeader
     {
         public List<string> value { get; set; }
+        public bool is_bold { get; set; }
     }
     public class TableRow
     {
         public List<string> value { get; set; }
         public bool is_bold{ get; set; }
         public bool is_cell_merged{ get; set; }
+        public string bgColor { get; set; }
     }
     public class TableData
     {
