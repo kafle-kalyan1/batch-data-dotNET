@@ -52,6 +52,7 @@ namespace batch_data
     {
         public List<string> value { get; set; }
         public bool is_bold { get; set; }
+        public string bgColor { get; set; }
     }
     public class TableRow
     {
