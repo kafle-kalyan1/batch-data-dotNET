@@ -12,7 +12,11 @@ using OfficeOpenXml.Drawing.Chart;
 using OfficeOpenXml.Style;
 using static System.Net.WebRequestMethods;
 using static OfficeOpenXml.ExcelErrorValue;
+using OfficeOpenXml;
+using OfficeOpenXml.Drawing.Chart;
+
 namespace BatchData.Controllers
+
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -112,200 +116,259 @@ namespace BatchData.Controllers
             package.SaveAs(new FileInfo(filePath));
             return PhysicalFile(filePath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
-        [HttpGet("exportPro")]
-        public IActionResult ExportToExcelPro()
+        [HttpPost("exportProPost")]
+        public IActionResult ExportToExcelPro(FinalData data1)
         {
-            FinalData data1 = new FinalData
-            {
-                property_name = "Expenses Tracker Pro",
-                report_name = "Expenses",
-                filters = new List<ReportFilters>
-    {
-        new ReportFilters
-        {
-            key = "From Date",
-            value = "04-07-2023"
-        },
-        new ReportFilters
-        {
-            key = "To Date",
-            value = "05-07-2023"
-        },
-        new ReportFilters
-        {
-            key = "User",
-            value = "User001"
-        },
-        new ReportFilters
-        {
-            key = "Total Days",
-            value = "30"
-        },
-        new ReportFilters
-        {
-            key = "NC Authority",
-            value = "All"
-        },
-    },
-                primary_table = new TableData
-                {
-                    header = new TableHeader
-                    {
-                        bgColor = "#7F8C8D",
-                        is_bold = true,
-                        value = new List<string>
-            {
-                "Date",
-                "Title",
-                "Category",
-                "Money"
-            }
-                    },
-                    rows = new List<TableRow>
-        {
-            new TableRow
-            {
-                bgColor = "#E7E6E6",
-                value = new List<string>
-                {
-                    "04-07-2023"
-                },
-                is_bold = true,
-                is_cell_merged = true
-            },
-            new TableRow
-            {
-                bgColor = "#D5D8DC",
-                value = new List<string>
-                {
-                    "Transportation"
-                },
-                is_bold = true,
-                is_cell_merged = true
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "04-07-2023",
-                    "Taxi Fare",
-                    "Transportation",
-                    "25"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "04-07-2023",
-                    "Fuel",
-                    "Transportation",
-                    "45"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "04-07-2023",
-                    "Parking Fee",
-                    "Transportation",
-                    "15"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            },
-            new TableRow
-            {
-                bgColor = "#D5D8DC",
-                value = new List<string>
-                {
-                    "Food"
-                },
-                is_bold = true,
-                is_cell_merged = true
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "04-07-2023",
-                    "Lunch",
-                    "Food",
-                    "12"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "04-07-2023",
-                    "Dinner",
-                    "Food",
-                    "18"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            }
-        }
-                },
-                secondary_table = new List<TableData>
-{
-    new TableData
-    {
-        rows = new List<TableRow>
-        {
-            new TableRow
-            {
-                bgColor = "#E7E6E6",
-                value = new List<string>
-                {
-                    "Summary-1"
-                },
-                is_bold = true,
-                is_cell_merged = true
-            },
-            new TableRow
-            {
-                bgColor = "#D5D8DC",
-                value = new List<string>
-                {
-                    "Date",
-                    "Total"
-                },
-                is_bold = true,
-                is_cell_merged = false
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "04-07-2023",
-                    "25,000"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            },
-            new TableRow
-            {
-                value = new List<string>
-                {
-                    "05-07-2023",
-                    "30,500"
-                },
-                is_bold = false,
-                is_cell_merged = false
-            }
-        }
-    }
-}
-            };
+            //            FinalData data1 = new FinalData
+            //            {
+            //                property_name = "Expenses Tracker Pro",
+            //                report_name = "Expenses",
+            //                filters = new List<ReportFilters>
+            //    {
+            //        new ReportFilters
+            //        {
+            //            key = "From Date",
+            //            value = "04-07-2023"
+            //        },
+            //        new ReportFilters
+            //        {
+            //            key = "To Date",
+            //            value = "05-07-2023"
+            //        },
+            //        new ReportFilters
+            //        {
+            //            key = "User",
+            //            value = "User001"
+            //        },
+            //        new ReportFilters
+            //        {
+            //            key = "Total Days",
+            //            value = "30"
+            //        },
+            //        new ReportFilters
+            //        {
+            //            key = "NC Authority",
+            //            value = "All"
+            //        },
+            //    },
+            //                primary_table = new TableData
+            //                {
+            //                    header = new TableHeader
+            //                    {
+            //                        bgColor = "#7F8C8D",
+            //                        is_bold = true,
+            //                        value = new List<string>
+            //            {
+            //                "Date",
+            //                "Title",
+            //                "Category",
+            //                "Money",
+
+            //            }
+            //                    },
+            //                    rows = new List<TableRow>
+            //        {
+            //            new TableRow
+            //            {
+            //                bgColor = "#E7E6E6",
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = true
+            //            },
+            //            new TableRow
+            //            {
+            //                bgColor = "#D5D8DC",
+            //                value = new List<string>
+            //                {
+            //                    "Transportation"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = true
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "Taxi Fare",
+            //                    "Transportation",
+            //                    "25",
+
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "Fuel",
+            //                    "Transportation",
+            //                    "45",
+
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "Parking Fee",
+            //                    "Transportation",
+            //                    "15",
+
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                bgColor = "#D5D8DC",
+            //                value = new List<string>
+            //                {
+            //                    "Food"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = true
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "Lunch",
+            //                    "Food",
+            //                    "12",
+
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "Dinner",
+            //                    "Food",
+            //                    "18",
+
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            }
+            //        }
+            //                },
+            //                secondary_table = new List<TableData>
+            //{
+            //    new TableData
+            //    {
+            //        rows = new List<TableRow>
+            //        {
+            //            new TableRow
+            //            {
+            //                bgColor = "#E7E6E6",
+            //                value = new List<string>
+            //                {
+            //                    "Summary-1"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = true
+            //            },
+            //            new TableRow
+            //            {
+            //                bgColor = "#D5D8DC",
+            //                value = new List<string>
+            //                {
+            //                    "Date",
+            //                    "Total"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "399"
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "05-07-2023",
+            //                    "2,479"
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            }
+            //        }
+            //    },
+            //     new TableData
+            //    {
+            //        rows = new List<TableRow>
+            //        {
+            //            new TableRow
+            //            {
+            //                bgColor = "#E7E6E6",
+            //                value = new List<string>
+            //                {
+            //                    "Summary-1"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = true
+            //            },
+            //            new TableRow
+            //            {
+            //                bgColor = "#D5D8DC",
+            //                value = new List<string>
+            //                {
+            //                    "Date",
+            //                    "Total"
+            //                },
+            //                is_bold = true,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "04-07-2023",
+            //                    "399"
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            },
+            //            new TableRow
+            //            {
+            //                value = new List<string>
+            //                {
+            //                    "05-07-2023",
+            //                    "2,479"
+            //                },
+            //                is_bold = false,
+            //                is_cell_merged = false
+            //            }
+            //        }
+            //    }
+
+
+            //}
+            //            };
+
+            Console.WriteLine(data1);
+            Console.ReadLine();
+
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using ExcelPackage package = new();
             double toDate;
@@ -408,6 +471,7 @@ namespace BatchData.Controllers
             {
                 var item = tableBodys[i];
                 var nextItem = (i < tableBodys.Count - 1) ? tableBodys[i + 1] : null;
+
                 if (col > colCount)
                 {
                     col = 1;
@@ -533,20 +597,74 @@ namespace BatchData.Controllers
 
 
             var secondWorksheet = package.Workbook.Worksheets.Add("Bar Graph");
+            int numm = 3;
+            int roww = 2;
+            int coll = 2;
+
+            foreach (var secc_table in data1.secondary_table)
+            {
+                var chart = secondWorksheet.Drawings.AddChart($"BarChart {numm}", eChartType.ColumnClustered);
+                chart.SetPosition(1, 1, numm, 1);
+                chart.SetSize(300, 200);
+              
+                foreach (var item in secc_table.rows)
+                {
+                    foreach (var value in item.value)
+                    {
+                        double numericValue;
+
+                        if (double.TryParse(value, out numericValue))
+                        {
+                            coll = 1;
+                            secondWorksheet.Cells[roww, coll].Value = numericValue;
+                            roww++;
+                        }
+                        else if (DateTime.TryParse(value, out var dateValue))
+                        {
+                            coll = 2;
+                            secondWorksheet.Cells[roww, coll].Value = dateValue;
+                            secondWorksheet.Cells[roww, coll].Style.Numberformat.Format = "dd-mm-yyyy";
+                        }
+                    }
+                }
+                numm += 5;
+
+                var series = chart.Series.Add(secondWorksheet.Cells[roww-2, coll, roww - 1, coll], secondWorksheet.Cells[roww-2, coll+1, roww - 1, coll + 1]);
+                series.Header = "Total";
+                series.Fill.Color = ColorTranslator.FromHtml("#3498DB");
+
+                chart.Title.Text = "Bar Graph";
+                chart.XAxis.Title.Text = "Date";
+                chart.YAxis.Title.Text = "Total";
+                roww++;
+            }
 
 
-            var chart = secondWorksheet.Drawings.AddChart("BarChart", eChartType.ColumnClustered);
-            chart.SetPosition(1, 0, 4, 0);
-            chart.SetSize(600, 400);
 
-            
-            var series = chart.Series.Add(secondWorksheet.Cells["A2:A3"], secondWorksheet.Cells["B2:B3"]);
-            series.Header = "Total";
-            series.Fill.Color = ColorTranslator.FromHtml("#3498DB"); 
-           
-            chart.Title.Text = "Bar Graph";
-            chart.XAxis.Title.Text = "Date";
-            chart.YAxis.Title.Text = "Total";
+
+
+
+
+            ExcelWorksheet worksheet3 = package.Workbook.Worksheets.Add("Graph");
+
+            var chart2 = worksheet3.Drawings.AddChart("BarChart", eChartType.ColumnClustered);
+
+            // Add some data to the worksheet
+            worksheet3.Cells["A1"].Value = "Category";
+            worksheet3.Cells["B1"].Value = "Value";
+            worksheet3.Cells["A2"].Value = "Category 1";
+            worksheet3.Cells["B2"].Value = 10;
+            worksheet3.Cells["A3"].Value = "Category 2";
+            worksheet3.Cells["B3"].Value = 20;
+            worksheet3.Cells["A4"].Value = "Category 3";
+            worksheet3.Cells["B4"].Value = 15;
+
+            // Create the chart
+            chart2 = worksheet3.Drawings.AddChart("BarChartdsad", eChartType.ColumnClustered);
+            chart2.SetPosition(1, 0, 4, 0);
+            chart2.SetSize(600, 400);
+            chart2.Title.Text = "Bar Graph";
+            chart2.Series.Add(worksheet3.Cells["B2:B4"], worksheet3.Cells["A2:A4"]);
 
 
 
@@ -554,8 +672,8 @@ namespace BatchData.Controllers
             var fileName = "eaa.xlsx";
             var filePath = Path.Combine(Path.GetTempPath(), fileName);
             package.SaveAs(new FileInfo(filePath));
-            //   return Ok(data1.primary_table.rows);
-            return PhysicalFile(filePath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        //       return Ok(data1);
+           return PhysicalFile(filePath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
     }
 }
